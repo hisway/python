@@ -15,30 +15,36 @@ class kuaipan:
         urllib2.install_opener(opener)
         
     def login(self):
-        req = urllib2.Request(url='https://www.kuaipan.cn/account_login.htm')
+        req = urllib2.Request(url='http://www.kuaipan.cn/user/login?t=wap&c=/wap/home')
         urllib2.urlopen(req)
         
-        postdata = {'username':self.userName,'userpwd':self.password,'isajax':'yes'}
+        postdata = {'username':self.userName,'password':self.password}
         postdata = urllib.urlencode(postdata)
         print '++++++++登陆++++++++'
         try:
-            req = urllib2.Request(url='http://www.kuaipan.cn/index.php?ac=account&op=login', data=postdata)
+            req = urllib2.Request(url='http://www.kuaipan.cn/accounts/login', data=postdata)
         except Exception, e:
             print "网络链接错误"
             return False
         response = urllib2.urlopen(req).read()
+        # print response 
+        # exit(1)
         l = json.loads(response)
-        if (l and l['state'] == '1'):
+        if (l and l['status'] == 'ok'):
             print "登录成功,准备签到！"
         else:
-            print '登陆失败',l['errcode']
+            print '登陆失败',l['status']
             exit(1)
         return l
 
     def signIn(self):
+        global m
+        global k
         print '++++++++签到++++++++'
         req = urllib2.Request(url='http://www.kuaipan.cn/index.php?ac=common&op=usersign')
         result = urllib2.urlopen(req).read()
+        # print result 
+        # exit(1)
         l = json.loads(result)
         if (l and l['state'] == 1) or \
         (l and 0 == l['state'] and l['increase'] * 1 == 0 and l['monthtask'].M900 == 900):
@@ -57,7 +63,7 @@ class kuaipan:
             if (l['state'] == -102):
                 print "今天您已经签到过了"
             else:
-                print "签到失败，遇到网络错误，请稍后再试！"
+                print "签到失败，遇到网络错误，请稍后再试！"      
         return result
         
     def turnplatel(self):
@@ -65,10 +71,12 @@ class kuaipan:
         req = urllib2.Request(url='http://www.kuaipan.cn/turnplate/lottery/')
         result = urllib2.urlopen(req).read()
         l = json.loads(result)
+        # print l 
+        # exit(1)
         if (l and l['status'] == 'noChance'): 
             print '今天机会已用完'
         else:
-            print '抽奖成功'
+            print "抽奖成功：%s" % (l['data']['awardType'])
         return result 
 
 
